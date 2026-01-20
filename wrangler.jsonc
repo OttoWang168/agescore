@@ -19,6 +19,9 @@
 			"database_name": "db_for_ages",
 			"database_id": "ef32d9ac-64f8-4c2d-88c8-e458fcf469f1"
 		}
+	],
+	"routes": [
+		"ages-api.otto168.pw"
 	]
 	/**
 	 * Smart Placement
