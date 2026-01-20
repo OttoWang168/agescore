@@ -1,7 +1,18 @@
 # db
 `npx wrangler d1 create db_for_ages`
+
 `npx drizzle-kit generate`
+
 `npx wrangler d1 execute db_for_ages --local --file=./drizzle/0000_lumpy_bill_hollister.sql`
+
+`npx wrangler d1 execute db_for_ages --local --file=./src/db/seeds/users.sql`
+
+`npx wrangler d1 execute db_for_ages --remote --file=./drizzle/0000_lumpy_bill_hollister.sql`
+
+`npx wrangler d1 execute db_for_ages --remote --file=./src/db/seeds/users.sql`
+
+`node bash_scripts/generate_users.js "$your_salt"`
+
 file: `.wrangler/state/v3/d1`
 
 ```txt
@@ -17,6 +28,7 @@ npm run deploy
 
 ```txt
 npm run cf-typegen
+npx wrangler types
 ```
 
 Pass the `CloudflareBindings` as generics when instantiation `Hono`:

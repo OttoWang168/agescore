@@ -1,10 +1,12 @@
-import { env } from "cloudflare:workers";
-import { Hono } from "hono";
+import { cors } from "hono/cors"
+import authRoute from "./routes/auth"
+import { Hono } from "hono"
 
-const app = new Hono<{ Bindings: CloudflareBindings }>();
+const app = new Hono<{ Bindings: Env }>()
 
-app.get("/message", (c) => {
-  return c.text("Hello Hono!");
-});
+app.use("/*", cors())
 
-export default app;
+// 挂载路由
+app.route('/api/auth', authRoute)
+
+export default app
