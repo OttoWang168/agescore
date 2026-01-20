@@ -1,9 +1,8 @@
+import { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 import { verify } from "hono/jwt";
-import { users } from "../db/schema";
 
-
-export const authMiddleware = createMiddleware<{ Bindings: Env, Variables: { user: { id: number, username: string, role: string } }}>(async (c, next) => {
+export const authMiddleware = createMiddleware<Context>(async (c, next) => {
   const authHeader = c.req.header('Authorization')
   if (!authHeader) { return c.json({ error: '☔️ 对不起，无法访问！' }, 401) }
 

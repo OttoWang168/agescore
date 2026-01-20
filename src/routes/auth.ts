@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator"
-import { Hono } from "hono"
+import { Context, Hono } from "hono"
 import { loginSchema } from "../validators/auth"
 import { hashPassword } from "../utils/crypto"
 import { drizzle } from "drizzle-orm/d1"
@@ -7,7 +7,7 @@ import { users } from "../db/schema"
 import { eq, and } from "drizzle-orm"
 import { sign, verify } from "hono/jwt"
 
-const auth = new Hono<{ Bindings: Env }>()
+const auth = new Hono<Context>()
 
 // ==========================================
 // 🚀 接口 A: 登录 (Login)
