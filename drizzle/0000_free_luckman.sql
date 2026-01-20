@@ -19,6 +19,7 @@ CREATE TABLE `event_definitions` (
 	`name` text NOT NULL,
 	`type` text NOT NULL,
 	`icon` text DEFAULT '📅',
+	`order` text NOT NULL,
 	`description` text,
 	`en_name` text,
 	`meteorological_changes` text,

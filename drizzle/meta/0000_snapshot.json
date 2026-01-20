@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "b01255d3-936b-4697-b081-862515242217",
+  "id": "971d5e17-2509-4c2e-877a-5b5fefd44f71",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "calendar_schedules": {
@@ -147,6 +147,13 @@
           "notNull": false,
           "autoincrement": false,
           "default": "'📅'"
+        },
+        "order": {
+          "name": "order",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         },
         "description": {
           "name": "description",

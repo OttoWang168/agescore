@@ -62,6 +62,7 @@ export const eventDefinitions = sqliteTable('event_definitions', {
   
   // 扩展字段 (你想要的都在这)
   icon: text('icon').default('📅'), // Emoji
+  order: text('order').notNull(), // 顺序
   description: text('description'), // 历史渊源 / 简介
   
   // 节气专属字段 (Holidays 可以留空)
