@@ -43,7 +43,7 @@ export const events = sqliteTable('events', {
 ]);
 
 // --- 3. 历史记录表 (EventLog) ---
-export const eventLog = sqliteTable('event_log', {
+export const eventLogs = sqliteTable('event_logs', {
   ...commonColumns,
   eventId: integer('event_id').notNull(), // 逻辑上关联 event.id
   logDate: text('log_date').notNull(), // YYYY-MM-DD
@@ -83,7 +83,7 @@ export const calendarSchedules = sqliteTable('calendar_schedules', {
   date: text('date').notNull(), // 2026-02-17
   
   // 🔥 关联到定义表的 code
-  definitionName: text('definition_code').notNull().references(() => eventDefinitions.name),
+  definitionName: text('definition_name').notNull().references(() => eventDefinitions.name),
   
   isHighlight: integer('is_highlight', { mode: 'boolean' }).default(false),
 }, (t) => [

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "668c851b-7021-4d52-a33c-2de912a6bd49",
+  "id": "b01255d3-936b-4697-b081-862515242217",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "calendar_schedules": {
@@ -43,8 +43,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "definition_code": {
-          "name": "definition_code",
+        "definition_name": {
+          "name": "definition_name",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -70,18 +70,18 @@
         "idx_calendar_schedules_def_name": {
           "name": "idx_calendar_schedules_def_name",
           "columns": [
-            "definition_code"
+            "definition_name"
           ],
           "isUnique": false
         }
       },
       "foreignKeys": {
-        "calendar_schedules_definition_code_event_definitions_name_fk": {
-          "name": "calendar_schedules_definition_code_event_definitions_name_fk",
+        "calendar_schedules_definition_name_event_definitions_name_fk": {
+          "name": "calendar_schedules_definition_name_event_definitions_name_fk",
           "tableFrom": "calendar_schedules",
           "tableTo": "event_definitions",
           "columnsFrom": [
-            "definition_code"
+            "definition_name"
           ],
           "columnsTo": [
             "name"
@@ -219,8 +219,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "event_log": {
-      "name": "event_log",
+    "event_logs": {
+      "name": "event_logs",
       "columns": {
         "id": {
           "name": "id",

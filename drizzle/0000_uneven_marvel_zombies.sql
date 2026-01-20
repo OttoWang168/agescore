@@ -4,13 +4,13 @@ CREATE TABLE `calendar_schedules` (
 	`gmt_modified` integer NOT NULL,
 	`is_deleted` integer DEFAULT false NOT NULL,
 	`date` text NOT NULL,
-	`definition_code` text NOT NULL,
+	`definition_name` text NOT NULL,
 	`is_highlight` integer DEFAULT false,
-	FOREIGN KEY (`definition_code`) REFERENCES `event_definitions`(`name`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`definition_name`) REFERENCES `event_definitions`(`name`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE INDEX `idx_calendar_schedules_date` ON `calendar_schedules` (`date`);--> statement-breakpoint
-CREATE INDEX `idx_calendar_schedules_def_name` ON `calendar_schedules` (`definition_code`);--> statement-breakpoint
+CREATE INDEX `idx_calendar_schedules_def_name` ON `calendar_schedules` (`definition_name`);--> statement-breakpoint
 CREATE TABLE `event_definitions` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`gmt_create` integer NOT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE `event_definitions` (
 --> statement-breakpoint
 CREATE UNIQUE INDEX `uk_event_definitions_name` ON `event_definitions` (`name`);--> statement-breakpoint
 CREATE INDEX `idx_event_definitions_type` ON `event_definitions` (`type`);--> statement-breakpoint
-CREATE TABLE `event_log` (
+CREATE TABLE `event_logs` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`gmt_create` integer NOT NULL,
 	`gmt_modified` integer NOT NULL,
@@ -39,8 +39,8 @@ CREATE TABLE `event_log` (
 	`log_date` text NOT NULL
 );
 --> statement-breakpoint
-CREATE INDEX `idx_event_log_event_id` ON `event_log` (`event_id`);--> statement-breakpoint
-CREATE INDEX `idx_event_log_log_date` ON `event_log` (`log_date`);--> statement-breakpoint
+CREATE INDEX `idx_event_log_event_id` ON `event_logs` (`event_id`);--> statement-breakpoint
+CREATE INDEX `idx_event_log_log_date` ON `event_logs` (`log_date`);--> statement-breakpoint
 CREATE TABLE `events` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`gmt_create` integer NOT NULL,
