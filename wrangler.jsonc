@@ -21,7 +21,7 @@
 		}
 	],
 	"routes": [
-		"ages-api.otto168.pw"
+		"ages-api.otto168.pw/*"
 	]
 	/**
 	 * Smart Placement
