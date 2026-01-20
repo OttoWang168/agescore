@@ -58,7 +58,7 @@ briefingRouter.get('/', async (c) => {
     response['下一个节气'] = diff; // 0 代表今天就是节气
     response['节气名'] = nextTerm.name;
     response['节气顺序'] = nextTerm.order; // 直接读表里的 '1'~'24'
-    response['emoji'] = nextTerm.icon;
+    response['节气emoji'] = nextTerm.icon;
 
     // 百科信息 (Shortcuts 可以根据 diff===0 来决定是否使用这些字段)
     response['节气英文名'] = nextTerm.enName;
@@ -120,6 +120,7 @@ briefingRouter.get('/', async (c) => {
       luckeyQuote = { content: '平平淡淡才是真 ❤️' }
     }
   }
+  response['每日一句'] = luckeyQuote.content
 
   return c.json(response)
 })
