@@ -13,6 +13,8 @@
 
 `node bash_scripts/generate_users.js "$your_salt"`
 
+`npx wrangler secret put $item`
+
 file: `.wrangler/state/v3/d1`
 
 ```txt
