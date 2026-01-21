@@ -7,9 +7,9 @@ import { and, asc, eq, gte, isNull } from "drizzle-orm";
 const SOLAR_TERM_TYPE = 'term'
 const HOLIDAY_TYPE = 'holiday'
 
-const briefingRouter = new Hono<Context>()
+const briefing = new Hono<Context>()
 
-briefingRouter.get('/', async (c) => {
+briefing.get('/', async (c) => {
   const token = c.env.REQUEST_TOKEN
   if (!token) { return c.json({ error: '🔻 崩了' }, 401) }
   const reqToken = c.req.query('token')
@@ -125,4 +125,4 @@ briefingRouter.get('/', async (c) => {
   return c.json(response)
 })
 
-export default briefingRouter
+export default briefing
