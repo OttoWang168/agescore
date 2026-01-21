@@ -4,8 +4,8 @@ import { drizzle } from "drizzle-orm/d1";
 import { calendarSchedules, eventDefinitions, events, quotes, users } from "../db/schema";
 import { and, asc, eq, gte, isNull } from "drizzle-orm";
 
-const SOLAR_TERM_TYPE = 'term'
-const HOLIDAY_TYPE = 'holiday'
+export const SOLAR_TERM_TYPE = 'term'
+export const HOLIDAY_TYPE = 'holiday'
 
 const briefing = new Hono<Context>()
 
