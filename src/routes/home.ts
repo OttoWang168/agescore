@@ -4,7 +4,7 @@ import { drizzle } from "drizzle-orm/d1";
 import { getBeijingCurrentDateStr, getCurrentDateStr, getDiffDays, getTodayStr } from "../utils/g-time";
 import { calendarSchedules, eventDefinitions, events, users } from "../db/schema";
 import { and, asc, desc, eq, gte } from "drizzle-orm";
-import { HOLIDAY_TYPE, SOLAR_TERM_TYPE } from "./briefing";
+import { EVENT_OWNER, EVENT_TYPE } from "../constants";
 
 const home = new Hono<Context>()
 
@@ -29,7 +29,7 @@ home.get("/", async (c) => {
     const diff = getDiffDays(e.date)
     const item = {
       id: `evt_${e.id}`, type: 'event', title: e.title, date: e.date, days: Math.abs(diff), icon: e.icon,
-      /**  如果 ownerName 为空，说明 userId 是 null，代表家庭公共事件 */ owner: e.ownerName || 'Family', avatar: e.ownerAvatar || '🏠'
+      /**  如果 ownerName 为空，说明 userId 是 null，代表家庭公共事件 */ owner: e.ownerName || EVENT_OWNER.FAMILY, avatar: e.ownerAvatar || '🏠'
     }
     // 过去 (diff >= 0 代表 target <= today，即“已累计”)
     // 按照 G老师之前的纠正，getDiffDays(过去) 返回的是负数，getDiffDays(未来) 是正数
@@ -59,14 +59,14 @@ home.get("/", async (c) => {
   ).from(calendarSchedules).leftJoin(eventDefinitions, eq(eventDefinitions.name, calendarSchedules.definitionName)).where(
     and(
       eq(calendarSchedules.isDeleted, false),
-      eq(eventDefinitions.type, SOLAR_TERM_TYPE),
+      eq(eventDefinitions.type, EVENT_TYPE.TERM),
       gte(calendarSchedules.date, todayStr),
     )
   ).orderBy(asc(calendarSchedules.date)).limit(1).get()
 
   const nextSolarTerm = nextTerm ? {
-    id: `term_${nextTerm.name}`, type: SOLAR_TERM_TYPE, title: nextTerm.name, subTitle: `第${nextTerm?.order}个节气`,
-    date: nextTerm.date, days: Math.abs(getDiffDays(nextTerm.date)), icon: nextTerm.icon, desc: nextTerm.desc, owner: 'System', avatar: '🎋'
+    id: `term_${nextTerm.name}`, type: EVENT_TYPE.TERM, title: nextTerm.name, subTitle: `第${nextTerm?.order}个节气`,
+    date: nextTerm.date, days: Math.abs(getDiffDays(nextTerm.date)), icon: nextTerm.icon, desc: nextTerm.desc, owner: EVENT_OWNER.SYSTEM, avatar: '🎋'
   } : null
 
 
@@ -80,14 +80,14 @@ home.get("/", async (c) => {
   ).from(calendarSchedules).leftJoin(eventDefinitions, eq(eventDefinitions.name, calendarSchedules.definitionName)).where(
     and(
       eq(calendarSchedules.isDeleted, false),
-      eq(eventDefinitions.type, HOLIDAY_TYPE),
+      eq(eventDefinitions.type, EVENT_TYPE.HOLIDAY),
       gte(calendarSchedules.date, todayStr),
     )
   ).orderBy(asc(calendarSchedules.date)).limit(1).get()
 
   const nextHolidayItem = nextHoliday ? {
-    id: `holiday_${nextHoliday.name}`, type: HOLIDAY_TYPE, title: nextHoliday.name, date: nextHoliday.date,
-    days: Math.abs(getDiffDays(nextHoliday.date)), icon: nextHoliday.icon, desc: nextHoliday.desc, owner: 'System', avatar: '🧧'
+    id: `holiday_${nextHoliday.name}`, type: EVENT_TYPE.HOLIDAY, title: nextHoliday.name, date: nextHoliday.date,
+    days: Math.abs(getDiffDays(nextHoliday.date)), icon: nextHoliday.icon, desc: nextHoliday.desc, owner: EVENT_OWNER.SYSTEM, avatar: '🧧'
   } : null
 
   // ====================================================

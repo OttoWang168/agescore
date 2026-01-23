@@ -3,9 +3,8 @@ import { getBeijingCurrentDateStr, getBeijingDate, getCurrentDateStr, getDiffDay
 import { drizzle } from "drizzle-orm/d1";
 import { calendarSchedules, eventDefinitions, events, quotes, users } from "../db/schema";
 import { and, asc, eq, gte, isNull } from "drizzle-orm";
+import { EVENT_TYPE } from "../constants";
 
-export const SOLAR_TERM_TYPE = 'term'
-export const HOLIDAY_TYPE = 'holiday'
 
 const briefing = new Hono<Context>()
 
@@ -46,7 +45,7 @@ briefing.get('/', async (c) => {
   ).from(calendarSchedules).leftJoin(eventDefinitions, eq(eventDefinitions.name, calendarSchedules.definitionName)).where(
     and(
       eq(calendarSchedules.isDeleted, false),
-      eq(eventDefinitions.type, SOLAR_TERM_TYPE),
+      eq(eventDefinitions.type, EVENT_TYPE.TERM),
       gte(calendarSchedules.date, todayStr),
     )
   ).orderBy(asc(calendarSchedules.date)).limit(1).get()
@@ -80,7 +79,7 @@ briefing.get('/', async (c) => {
   ).from(calendarSchedules).leftJoin(eventDefinitions, eq(eventDefinitions.name, calendarSchedules.definitionName)).where(
     and(
       eq(calendarSchedules.isDeleted, false),
-      eq(eventDefinitions.type, HOLIDAY_TYPE),
+      eq(eventDefinitions.type, EVENT_TYPE.HOLIDAY),
       gte(calendarSchedules.date, todayStr),
     )
   ).orderBy(asc(calendarSchedules.date)).limit(1).get()
