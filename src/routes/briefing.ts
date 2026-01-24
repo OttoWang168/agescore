@@ -4,6 +4,9 @@ import { drizzle } from "drizzle-orm/d1";
 import { calendarSchedules, eventDefinitions, events, quotes, users } from "../db/schema";
 import { and, asc, eq, gte, isNull } from "drizzle-orm";
 import { EVENT_TYPE } from "../constants";
+import { eventService } from "../services/eventService";
+import { calendarService } from "../services/calendar";
+import { quotaService } from "../services/quotaService";
 
 
 const briefing = new Hono<Context>()
@@ -14,113 +17,51 @@ briefing.get('/', async (c) => {
   const reqToken = c.req.query('token')
   if (reqToken!==token) { return c.json({ error: '🔹 崩了' }, 401) }
 
-  const todayStr = getTodayStr()
-  const db = drizzle(c.env.db_for_ages)
-
   const response: any = { beijingTime: getBeijingCurrentDateStr(), serverTime: getCurrentDateStr(), }
 
-  // ==========================================
-  // 1. 获取并拍平 用户事件 (User Events)
-  // ==========================================
-  const eventList = await db.select(
-    { title: events.title, date: events.eventDate, ownerName: users.username }
-  ).from(events).leftJoin(users, eq(events.ownerId, users.id)).where(
-    eq(events.isDeleted, false)
-  ).all()
-  eventList.forEach(e => {
-    const diffDays = getDiffDays(e.date)
-    const key = e.ownerName ? `${e.ownerName}${e.title}` : e.title
-    response[key] = Math.abs(diffDays)
+  const db = drizzle(c.env.db_for_ages)
+    // 1. 并行获取数据 (比以前串行 `await` 更快！)
+  const [userEvents, nextSolarTerm, nextHoliday, quote] = await Promise.all([
+    eventService.getAllFormatted(db),
+    calendarService.getNextSepecial(db, EVENT_TYPE.TERM),
+    calendarService.getNextSepecial(db, EVENT_TYPE.HOLIDAY),
+    quotaService.getTodayQuota(db),
+  ]);
+
+  // 填充用户事件 (Key-Value 模式)
+  userEvents.forEach(e => {
+    response[e.keyName] = e.days
   })
 
-  // ==========================================
-  // 2. 获取下一个 节气 (含百科信息)
-  // ==========================================
-  const nextTerm = await db.select(
-    {
-      name: eventDefinitions.name, date: calendarSchedules.date, order: eventDefinitions.order, icon: eventDefinitions.icon,
-      enName: eventDefinitions.enName, desc: eventDefinitions.description, meteo: eventDefinitions.meteorologicalChanges,
-      poem: eventDefinitions.poem, custom: eventDefinitions.custom, food: eventDefinitions.food, health: eventDefinitions.health
-    }
-  ).from(calendarSchedules).leftJoin(eventDefinitions, eq(eventDefinitions.name, calendarSchedules.definitionName)).where(
-    and(
-      eq(calendarSchedules.isDeleted, false),
-      eq(eventDefinitions.type, EVENT_TYPE.TERM),
-      gte(calendarSchedules.date, todayStr),
-    )
-  ).orderBy(asc(calendarSchedules.date)).limit(1).get()
-
-  if (nextTerm) {
-     const diff = Math.abs(getDiffDays(nextTerm.date));
-    
+  // 填充节气
+  if (nextSolarTerm) {
     // 基础信息
-    response['下一个节气'] = diff; // 0 代表今天就是节气
-    response['节气名'] = nextTerm.name;
-    response['节气顺序'] = nextTerm.order; // 直接读表里的 '1'~'24'
-    response['节气emoji'] = nextTerm.icon;
+    response['下一个节气'] = nextSolarTerm.days; // 0 代表今天就是节气
+    response['节气顺序'] = nextSolarTerm.order; // 直接读表里的 '1'~'24'
+    response['节气emoji'] = nextSolarTerm.icon;
+    response['节气名'] = nextSolarTerm.title;
 
     // 百科信息 (Shortcuts 可以根据 diff===0 来决定是否使用这些字段)
-    response['节气英文名'] = nextTerm.enName;
-    response['节气含义'] = nextTerm.desc;
-    response['节气气象表现'] = nextTerm.meteo;
-    response['节气相关诗句'] = nextTerm.poem;
-    response['节气风俗习惯'] = nextTerm.custom;
-    response['节气美食'] = nextTerm.food;
-    response['节气补充说明'] = nextTerm.health;
+    response['节气英文名'] = nextSolarTerm.wiki.enName;
+    response['节气含义'] = nextSolarTerm.wiki.desc;
+    response['节气气象表现'] = nextSolarTerm.wiki.meteo;
+    response['节气相关诗句'] = nextSolarTerm.wiki.poem;
+    response['节气风俗习惯'] = nextSolarTerm.wiki.custom;
+    response['节气美食'] = nextSolarTerm.wiki.food;
+    response['节气补充说明'] = nextSolarTerm.wiki.health;
   }
 
-  /// ==========================================
-  // 3. 获取下一个 节假日
-  // ==========================================
-  const nextHoliday = await db.select(
-    { 
-      name: eventDefinitions.name, date: calendarSchedules.date, order: eventDefinitions.order, icon: eventDefinitions.icon,
-    }
-  ).from(calendarSchedules).leftJoin(eventDefinitions, eq(eventDefinitions.name, calendarSchedules.definitionName)).where(
-    and(
-      eq(calendarSchedules.isDeleted, false),
-      eq(eventDefinitions.type, EVENT_TYPE.HOLIDAY),
-      gte(calendarSchedules.date, todayStr),
-    )
-  ).orderBy(asc(calendarSchedules.date)).limit(1).get()
-
+  // 填充假日
   if (nextHoliday) {
     const diff = Math.abs(getDiffDays(nextHoliday.date));
     response['下一个节假日'] = diff;
-    response['节假日名称'] = nextHoliday.name;
+    response['节假日名称'] = nextHoliday.title;
     response['节假日顺序'] = nextHoliday.order; // '1'~'7'
     response['节假日Emoji'] = nextHoliday.icon;
   }
 
-  // ==========================================
-  // 4. 吉言抽取 (含副作用)
-  // ==========================================
-  let luckeyQuote 
-  luckeyQuote = await db.select().from(quotes).where(
-    and(
-      eq(quotes.isDeleted, false),
-      eq(quotes.scheduleDate, todayStr),
-    )
-  ).get()
-  if (!luckeyQuote) {
-    const pool = await db.select().from(quotes).where(
-      and(
-        eq(quotes.isDeleted, false),
-        eq(quotes.isUsed, false),
-        isNull(quotes.scheduleDate),
-      )
-    ).all()
-    if (pool.length > 0) {
-      luckeyQuote = pool[Math.floor(Math.random() * pool.length)]
-      if (luckeyQuote) {
-        await db.update(quotes).set({ isUsed: true, usedAt: getBeijingDate() }).where(eq(quotes.id, luckeyQuote.id)).run()
-      }
-    } else {
-      luckeyQuote = { content: '平平淡淡才是真 ❤️' }
-    }
-  }
-  response['每日一句'] = luckeyQuote.content
-
+  // 填充每日一句
+  response['每日一句'] = quote
   return c.json(response)
 })
 
